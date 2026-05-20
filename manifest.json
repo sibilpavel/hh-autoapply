@@ -9,7 +9,8 @@
   ],
 
   "host_permissions": [
-    "https://hh.ru/*"
+    "https://hh.ru/*",
+    "https://*.hh.ru/*"
   ],
 
   "action": {

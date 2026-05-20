@@ -10,6 +10,9 @@ const MAX_RESPONSES = 100;
 
 const processedVacancies = new Set();
 
+// список вакансий с тестами
+const invalidVacancies = [];
+
 
 // =========================
 // UTILS
@@ -64,6 +67,44 @@ function isProcessed(vacancyId) {
 function markProcessed(vacancyId) {
 
     processedVacancies.add(vacancyId);
+}
+
+
+// =========================
+// TEST CHECK
+// =========================
+
+async function hasRequiredTest(vacancyId) {
+
+    try {
+
+        const response = await fetch(
+            `https://${location.host}/applicant/vacancy_response/popup?vacancyId=${vacancyId}&isTest=no&withoutTest=no&lux=true&alreadyApplied=false`,
+            {
+                method: "GET",
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        const isTestRequired = data.type === "test-required";
+
+        if (isTestRequired) {
+
+            console.log(`Вакансия ${vacancyId} требует тест`);
+
+            invalidVacancies.push(vacancyId);
+        }
+
+        return isTestRequired;
+
+    } catch (e) {
+
+        console.log("Ошибка проверки теста:", e);
+
+        return false;
+    }
 }
 
 
@@ -159,6 +200,19 @@ async function processVacancy(button) {
 
     console.log("Обрабатываем:", vacancyId);
 
+    // =========================
+    // CHECK TEST
+    // =========================
+
+    const requiresTest = await hasRequiredTest(vacancyId);
+
+    if (requiresTest) {
+
+        console.log(`Скипаем вакансию ${vacancyId} из-за теста`);
+
+        return;
+    }
+
     const navigationBlock = blockNavigation();
 
     try {
@@ -218,6 +272,8 @@ async function processCurrentPage() {
     }
 
     console.log("Обработка страницы завершена");
+
+    console.log("Вакансии с тестами:", invalidVacancies);
 }
 
 
@@ -248,6 +304,8 @@ function stopResponses() {
     isRunning = false;
 
     console.log("Работа завершена");
+
+    console.log("invalidVacancies:", invalidVacancies);
 }
 
 
