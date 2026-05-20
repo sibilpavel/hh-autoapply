@@ -13,6 +13,8 @@ const processedVacancies = new Set();
 // список вакансий с тестами
 const invalidVacancies = [];
 
+const COVER_LETTER_TEXT =
+    "Работал со всеми технологиями из вашей вакансии, когда удобно будет созвониться?";
 
 // =========================
 // UTILS
@@ -37,6 +39,56 @@ function getResponseButtons() {
     );
 }
 
+// =========================
+// COVER LETTER MODAL
+// =========================
+
+async function handleCoverLetterModal() {
+    const textarea = document.querySelector(
+        '[data-qa="vacancy-response-popup-form-letter-input"]'
+    );
+
+    if (textarea) {
+
+        console.log("Найдено окно сопроводительного письма");
+
+        textarea.focus();
+
+        textarea.value = COVER_LETTER_TEXT;
+
+        // триггерим события
+        textarea.dispatchEvent(
+            new Event("input", { bubbles: true })
+        );
+
+        textarea.dispatchEvent(
+            new Event("change", { bubbles: true })
+        );
+
+        await sleep(500);
+
+        // кнопка отклика
+        const submitButton = document.querySelector(
+            '[data-qa="vacancy-response-submit-popup"]'
+        );
+
+        if (submitButton) {
+
+            submitButton.disabled = false;
+
+            submitButton.click();
+
+            console.log("Сопроводительное отправлено");
+        }
+
+        return true;
+    }
+
+    await sleep(300);
+
+
+    return false;
+}
 
 // =========================
 // VACANCY
@@ -175,6 +227,8 @@ async function processVacancy(button) {
         await clickResponseButton(button);
 
         await sleep(2500);
+
+        await handleCoverLetterModal();
 
         totalResponses++;
 
