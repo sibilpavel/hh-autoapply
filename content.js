@@ -108,51 +108,6 @@ async function hasRequiredTest(vacancyId) {
 }
 
 
-// =========================
-// NAVIGATION BLOCK
-// =========================
-
-function blockNavigation() {
-
-    const originalOpen = window.open;
-
-    const originalAssign = window.location.assign;
-
-    const originalReplace = window.location.replace;
-
-    window.open = function () {
-
-        console.log("window.open заблокирован");
-
-        return null;
-    };
-
-    window.location.assign = function () {
-
-        console.log("location.assign заблокирован");
-    };
-
-    window.location.replace = function () {
-
-        console.log("location.replace заблокирован");
-    };
-
-    return {
-        originalOpen,
-        originalAssign,
-        originalReplace
-    };
-}
-
-function restoreNavigation(originals) {
-
-    window.open = originals.originalOpen;
-
-    window.location.assign = originals.originalAssign;
-
-    window.location.replace = originals.originalReplace;
-}
-
 
 // =========================
 // DOM ACTIONS
@@ -213,8 +168,6 @@ async function processVacancy(button) {
         return;
     }
 
-    const navigationBlock = blockNavigation();
-
     try {
 
         await scrollToButton(button);
@@ -231,9 +184,6 @@ async function processVacancy(button) {
 
         console.log("Ошибка отклика:", e);
 
-    } finally {
-
-        restoreNavigation(navigationBlock);
     }
 
     await sleep(1500);
