@@ -13,9 +13,6 @@ const processedVacancies = new Set();
 // список вакансий с тестами
 const invalidVacancies = [];
 
-const COVER_LETTER_TEXT =
-    "Работал со всеми технологиями из вашей вакансии, когда удобно будет созвониться?";
-
 // =========================
 // UTILS
 // =========================
@@ -24,6 +21,20 @@ function sleep(ms) {
 
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+async function getCoverLetterText() {
+
+    return new Promise(resolve => {
+
+        chrome.storage.local.get(
+            ['coverLetter'],
+            result => resolve(result.coverLetter)
+        );
+
+    });
+
+}
+
 
 
 // =========================
@@ -65,7 +76,7 @@ async function handleCoverLetterModal() {
 
     textarea.focus();
 
-    textarea.value = COVER_LETTER_TEXT;
+    textarea.value = await getCoverLetterText();
 
     textarea.dispatchEvent(
         new Event("input", { bubbles: true })

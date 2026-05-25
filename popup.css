@@ -1,0 +1,17 @@
+body {
+    width: 360px;
+    background: #0f172a;
+    color: white;
+}
+
+.nav-pills .nav-link {
+    color: #cbd5e1;
+}
+
+.nav-pills .nav-link.active {
+    background: #3b82f6;
+}
+
+textarea {
+    resize: none;
+}
