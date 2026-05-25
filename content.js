@@ -39,55 +39,56 @@ function getResponseButtons() {
     );
 }
 
+
 // =========================
 // COVER LETTER MODAL
 // =========================
 
 async function handleCoverLetterModal() {
+
     const textarea = document.querySelector(
         '[data-qa="vacancy-response-popup-form-letter-input"]'
     );
 
-    if (textarea) {
-
-        console.log("Найдено окно сопроводительного письма");
-
-        textarea.focus();
-
-        textarea.value = COVER_LETTER_TEXT;
-
-        // триггерим события
-        textarea.dispatchEvent(
-            new Event("input", { bubbles: true })
-        );
-
-        textarea.dispatchEvent(
-            new Event("change", { bubbles: true })
-        );
-
-        await sleep(500);
-
-        // кнопка отклика
-        const submitButton = document.querySelector(
-            '[data-qa="vacancy-response-submit-popup"]'
-        );
-
-        if (submitButton) {
-
-            submitButton.disabled = false;
-
-            submitButton.click();
-
-            console.log("Сопроводительное отправлено");
-        }
-
-        return true;
+    if (!textarea) {
+        return false;
     }
 
-    await sleep(300);
+    // защита от повторной обработки
+    if (textarea.dataset.processed === "true") {
+        return false;
+    }
 
+    textarea.dataset.processed = "true";
 
-    return false;
+    console.log("Найдено окно сопроводительного письма");
+
+    textarea.focus();
+
+    textarea.value = COVER_LETTER_TEXT;
+
+    textarea.dispatchEvent(
+        new Event("input", { bubbles: true })
+    );
+
+    textarea.dispatchEvent(
+        new Event("change", { bubbles: true })
+    );
+
+    const submitButton = document.querySelector(
+        '[data-qa="vacancy-response-submit-popup"]'
+    );
+
+    if (submitButton) {
+
+        submitButton.disabled = false;
+
+        submitButton.click();
+
+        console.log("Сопроводительное отправлено");
+    }
+
+    return true;
 }
 
 // =========================
@@ -96,26 +97,49 @@ async function handleCoverLetterModal() {
 
 async function handleRelocationModal() {
 
-    await sleep(800);
-
     const relocationButton = document.querySelector(
         '[data-qa="relocation-warning-confirm"]'
     );
 
-    if (relocationButton) {
-
-        console.log("Найдено relocation модальное окно");
-
-        relocationButton.click();
-
-        console.log('Нажата кнопка "Все равно откликнуться"');
-
-        await sleep(1200);
-
-        return true;
+    if (!relocationButton) {
+        return false;
     }
 
-    return false;
+    // защита от повторного клика
+    if (relocationButton.dataset.processed === "true") {
+        return false;
+    }
+
+    relocationButton.dataset.processed = "true";
+
+    console.log("Найдено relocation модальное окно");
+
+    relocationButton.click();
+
+    console.log('Нажата кнопка "Все равно откликнуться"');
+
+    return true;
+}
+
+// =========================
+// MODAL OBSERVER
+// =========================
+
+function startModalObserver() {
+
+    const observer = new MutationObserver(async () => {
+
+        await handleRelocationModal();
+
+        await handleCoverLetterModal();
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    return observer;
 }
 
 // =========================
@@ -217,60 +241,27 @@ async function processVacancy(button) {
 
     const vacancyId = getVacancyId(button);
 
-    if (!vacancyId) {
-
-        console.log("Не удалось получить vacancy id");
-
-        return;
-    }
-
-    if (isProcessed(vacancyId)) {
-
-        console.log("Уже обработано:", vacancyId);
-
+    if (!vacancyId || isProcessed(vacancyId)) {
         return;
     }
 
     markProcessed(vacancyId);
 
-    console.log("Обрабатываем:", vacancyId);
-
-    // =========================
-    // CHECK TEST
-    // =========================
-
     const requiresTest = await hasRequiredTest(vacancyId);
 
     if (requiresTest) {
-
-        console.log(`Скипаем вакансию ${vacancyId} из-за теста`);
-
         return;
     }
 
-    try {
+    await scrollToButton(button);
 
-        await scrollToButton(button);
+    button.click();
 
-        await clickResponseButton(button);
+    totalResponses++;
 
-        await handleRelocationModal();
+    console.log(`Отклик №${totalResponses}`);
 
-        await sleep(2500);
-
-        await handleCoverLetterModal();
-
-        totalResponses++;
-
-        console.log(`Отклик №${totalResponses}`);
-
-    } catch (e) {
-
-        console.log("Ошибка отклика:", e);
-
-    }
-
-    await sleep(1500);
+    await sleep(800);
 }
 
 
@@ -315,18 +306,17 @@ async function processCurrentPage() {
 // START / STOP
 // =========================
 
+let modalObserver = null;
+
 async function startResponses() {
 
     if (isRunning) {
-
-        console.log("Уже запущено");
-
         return;
     }
 
     isRunning = true;
 
-    console.log("Запуск автооткликов");
+    modalObserver = startModalObserver();
 
     await processCurrentPage();
 
@@ -337,9 +327,9 @@ function stopResponses() {
 
     isRunning = false;
 
-    console.log("Работа завершена");
+    modalObserver?.disconnect();
 
-    console.log("invalidVacancies:", invalidVacancies);
+    console.log("Stopped");
 }
 
 
