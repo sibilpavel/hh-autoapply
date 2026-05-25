@@ -91,6 +91,34 @@ async function handleCoverLetterModal() {
 }
 
 // =========================
+// RELOCATION MODAL
+// =========================
+
+async function handleRelocationModal() {
+
+    await sleep(800);
+
+    const relocationButton = document.querySelector(
+        '[data-qa="relocation-warning-confirm"]'
+    );
+
+    if (relocationButton) {
+
+        console.log("Найдено relocation модальное окно");
+
+        relocationButton.click();
+
+        console.log('Нажата кнопка "Все равно откликнуться"');
+
+        await sleep(1200);
+
+        return true;
+    }
+
+    return false;
+}
+
+// =========================
 // VACANCY
 // =========================
 
@@ -225,6 +253,8 @@ async function processVacancy(button) {
         await scrollToButton(button);
 
         await clickResponseButton(button);
+
+        await handleRelocationModal();
 
         await sleep(2500);
 
