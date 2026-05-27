@@ -1,0 +1,27 @@
+{
+  "name": "hh-auto-bot",
+  "version": "1.0.0",
+  "description": "Браузерное расширение для автоматизации откликов на вакансии с поддержкой кастомного сопроводительного письма.",
+  "main": "content.js",
+  "scripts": {
+    "build:popup": "vite build",
+    "build:content": "esbuild src/content/index.js --bundle --outfile=dist/content.js --format=iife",
+    "build": "npm run build:popup && npm run build:content"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sibilpavel/hh-autoapply.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sibilpavel/hh-autoapply/issues"
+  },
+  "homepage": "https://github.com/sibilpavel/hh-autoapply#readme",
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "vite": "^8.0.14"
+  }
+}

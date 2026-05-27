@@ -1,0 +1,7 @@
+export const CONFIG = {
+    MAX_RESPONSES: 100,
+
+    SCROLL_DELAY: 700,
+
+    RESPONSE_DELAY: 800
+};
